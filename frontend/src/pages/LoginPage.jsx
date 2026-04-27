@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const BASE_URL = "http://localhost:8080";
@@ -14,6 +14,13 @@ const LoginPage = () => {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false); // ✅ NEW
+
+    // ✅ Check token on load
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        setIsLoggedIn(!!token);
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -47,15 +54,14 @@ const LoginPage = () => {
 
             const data = await response.json();
 
-            // ✅ STORE TOKEN
+            // ✅ Store token
             localStorage.setItem("token", data.token);
-
-            // Optional: store user info
             localStorage.setItem("user", JSON.stringify(data));
+
+            setIsLoggedIn(true); // ✅ update UI
 
             alert("Login successful 🚀");
 
-            // ✅ REDIRECT (change route if needed)
             navigate("/dashboard");
 
         } catch (err) {
@@ -65,6 +71,16 @@ const LoginPage = () => {
         }
     };
 
+    // ✅ Logout function
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        setIsLoggedIn(false);
+
+        alert("Logged out ❌");
+    };
+
     return (
         <div style={styles.wrapper}>
             <div style={styles.card}>
@@ -72,58 +88,57 @@ const LoginPage = () => {
 
                 {error && <p style={styles.error}>{error}</p>}
 
-                <form onSubmit={handleSubmit}>
-                    {/* Email */}
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Enter email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        style={styles.input}
-                    />
-
-                    {/* Password */}
-                    <div style={{ position: "relative" }}>
+                {/* ✅ SHOW LOGIN FORM ONLY WHEN NOT LOGGED IN */}
+                {!isLoggedIn && (
+                    <form onSubmit={handleSubmit}>
                         <input
-                            type={showPassword ? "text" : "password"}
-                            name="password"
-                            placeholder="Enter password"
-                            value={formData.password}
+                            type="email"
+                            name="email"
+                            placeholder="Enter email"
+                            value={formData.email}
                             onChange={handleChange}
                             style={styles.input}
                         />
-                        <span
-                            style={styles.eye}
-                            onClick={() => setShowPassword(!showPassword)}
-                        >
-                            {showPassword ? "🙈" : "👁️"}
-                        </span>
-                    </div>
 
-                    <button type="submit" style={styles.button}>
-                        {loading ? "Loading..." : "Login"}
+                        <div style={{ position: "relative" }}>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                placeholder="Enter password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                style={styles.input}
+                            />
+                            <span
+                                style={styles.eye}
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? "🙈" : "👁️"}
+                            </span>
+                        </div>
+
+                        <button type="submit" style={styles.button}>
+                            {loading ? "Loading..." : "Login"}
+                        </button>
+
+                        <p style={styles.linkText}>
+                            Don’t have an account?{" "}
+                            <Link to="/" style={styles.link}>
+                                Register
+                            </Link>
+                        </p>
+                    </form>
+                )}
+
+                {/* ✅ SHOW LOGOUT ONLY WHEN LOGGED IN */}
+                {isLoggedIn && (
+                    <button
+                        style={{ ...styles.button, marginTop: "10px", background: "red" }}
+                        onClick={handleLogout}
+                    >
+                        Logout
                     </button>
-                </form>
-
-                <p style={styles.linkText}>
-                    Don’t have an account?{" "}
-                    <Link to="/" style={styles.link}>
-                        Register
-                    </Link>
-                </p>
-
-                {/* ✅ LOGOUT BUTTON (for testing) */}
-                <button
-                    style={{ ...styles.button, marginTop: "10px", background: "red" }}
-                    onClick={() => {
-                        localStorage.removeItem("token");
-                        localStorage.removeItem("user");
-                        alert("Logged out ❌");
-                    }}
-                >
-                    Logout
-                </button>
+                )}
             </div>
         </div>
     );
