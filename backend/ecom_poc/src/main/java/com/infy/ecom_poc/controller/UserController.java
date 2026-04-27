@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000") // ✅ FIXED
+
 public class UserController {
 
     @Autowired
@@ -20,6 +21,6 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
         RegisterResponse response = userService.registerUser(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response); // 201 Created ✅
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

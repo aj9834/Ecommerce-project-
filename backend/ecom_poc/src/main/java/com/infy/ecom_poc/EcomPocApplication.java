@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class EcomPocApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(EcomPocApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(EcomPocApplication.class, args);
+    }
 }

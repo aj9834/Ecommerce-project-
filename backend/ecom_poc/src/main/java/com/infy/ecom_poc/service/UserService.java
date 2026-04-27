@@ -1,5 +1,7 @@
 package com.infy.ecom_poc.service;
 
+import com.infy.ecom_poc.dto.LoginRequest;
+import com.infy.ecom_poc.dto.LoginResponse;
 import com.infy.ecom_poc.dto.RegisterRequest;
 import com.infy.ecom_poc.dto.RegisterResponse;
 import com.infy.ecom_poc.entity.User;
@@ -14,31 +16,45 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    // BCrypt encoder to hash passwords
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    // ✅ REGISTER
     public RegisterResponse registerUser(RegisterRequest request) {
 
-        // 1. Check if email already exists
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered");
         }
 
-        // 2. Create User entity
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword())); // 🔐 Encrypted!
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        // 3. Save to DB
         User savedUser = userRepository.save(user);
 
-        // 4. Return safe response (no password)
         return new RegisterResponse(
                 savedUser.getId(),
                 savedUser.getName(),
                 savedUser.getEmail(),
                 "User registered successfully!"
+        );
+    }
+
+    // ✅ LOGIN
+    public LoginResponse loginUser(LoginRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+
+        return new LoginResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                "Login successful"
         );
     }
 }

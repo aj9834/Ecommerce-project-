@@ -1,4 +1,3 @@
-// Base URL of your Spring Boot backend
 const BASE_URL = "http://localhost:8080";
 
 export const registerUser = async (formData) => {
@@ -10,12 +9,11 @@ export const registerUser = async (formData) => {
         body: JSON.stringify(formData),
     });
 
-    const data = await response.json();
-
+    // 👇 IMPORTANT: check before parsing JSON
     if (!response.ok) {
-        // Return validation errors or conflict errors from backend
-        throw data;
+        const text = await response.text();
+        throw { error: text || "Registration failed" };
     }
 
-    return data;
+    return await response.json();
 };
