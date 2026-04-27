@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
+const BASE_URL = "http://localhost:8080";
 
 const LoginPage = () => {
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -28,14 +32,34 @@ const LoginPage = () => {
         setLoading(true);
 
         try {
-            // 👉 Replace this with real API later
-            console.log("Login Data:", formData);
+            const response = await fetch(`${BASE_URL}/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
 
-            // Fake success (for now)
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text || "Login failed");
+            }
+
+            const data = await response.json();
+
+            // ✅ STORE TOKEN
+            localStorage.setItem("token", data.token);
+
+            // Optional: store user info
+            localStorage.setItem("user", JSON.stringify(data));
+
             alert("Login successful 🚀");
 
+            // ✅ REDIRECT (change route if needed)
+            navigate("/dashboard");
+
         } catch (err) {
-            setError("Invalid email or password");
+            setError(err.message || "Invalid email or password");
         } finally {
             setLoading(false);
         }
@@ -88,6 +112,18 @@ const LoginPage = () => {
                         Register
                     </Link>
                 </p>
+
+                {/* ✅ LOGOUT BUTTON (for testing) */}
+                <button
+                    style={{ ...styles.button, marginTop: "10px", background: "red" }}
+                    onClick={() => {
+                        localStorage.removeItem("token");
+                        localStorage.removeItem("user");
+                        alert("Logged out ❌");
+                    }}
+                >
+                    Logout
+                </button>
             </div>
         </div>
     );

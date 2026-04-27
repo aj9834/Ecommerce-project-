@@ -2,6 +2,7 @@ import { useState } from "react";
 import { registerUser } from "../api/authApi";
 import { Link } from "react-router-dom";
 import "./RegisterPage.css";
+import "../api/authApi"
 
 const RegisterPage = () => {
     const [formData, setFormData] = useState({
